@@ -4,6 +4,7 @@ import { BookType, RootState } from "../types";
 import { useCallback } from "react";
 import { getBooks as getBooksSagaStart } from "../redux/modules/books";
 import { logout as logoutSagaStart } from "../redux/modules/auth";
+import { push } from "connected-react-router";
 
 export default function ListContainer() {
   const dispatch = useDispatch();
@@ -24,6 +25,10 @@ export default function ListContainer() {
     dispatch(getBooksSagaStart());
   }, [dispatch]);
 
+  const goAdd = useCallback(() => {
+    dispatch(push("/add"));
+  }, [dispatch]);
+
   return (
     <List
       books={books}
@@ -31,6 +36,7 @@ export default function ListContainer() {
       getBooks={getBooks}
       error={error}
       logout={logout}
+      goAdd={goAdd}
     />
   );
 }
