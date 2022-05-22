@@ -44,9 +44,14 @@ const reducer = handleActions<BooksState, BookType[]>(
 
 export default reducer;
 
-export const { getBooks, addBook } = createActions("GET_BOOKS", "ADD_BOOK", {
-  prefix,
-});
+export const { getBooks, addBook, deleteBook } = createActions(
+  "GET_BOOKS",
+  "ADD_BOOK",
+  "DELETE_BOOK",
+  {
+    prefix,
+  }
+);
 
 function* getBooksSaga() {
   try {
@@ -77,9 +82,23 @@ function* addBookSaga(action: Action<BookReqType>) {
   }
 }
 
+function* deleteBookSaga(action: Action<number>) {
+  try {
+    const bookId = action.payload;
+    yield put(pending());
+    const token: string = yield select((state) => state.auth.token);
+    yield call(BookService.deleteBook, token, bookId);
+    const books: BookType[] = yield select((state) => state.books.books);
+    yield put(success(books.filter((book) => book.bookId !== bookId)));
+  } catch (error) {
+    yield put(fail(new Error(error?.response?.data.error || "UNKNOWN ERROR")));
+  }
+}
+
 export function* booksSaga() {
   //api호출의 reduce라고 생각하니 이해가 쉬움
   //type이 들어왔을 떄 실행할 함수를실행
   yield takeLatest(`${prefix}/GET_BOOKS`, getBooksSaga);
   yield takeEvery(`${prefix}/ADD_BOOK`, addBookSaga);
+  yield takeEvery(`${prefix}/DELETE_BOOK`, deleteBookSaga);
 }
